@@ -20,26 +20,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import okio.Buffer;
 import org.junit.Ignore;
 import org.junit.Test;
-import retrofit.http.Body;
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FieldMap;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.HEAD;
-import retrofit.http.HTTP;
-import retrofit.http.Header;
-import retrofit.http.Headers;
-import retrofit.http.Multipart;
-import retrofit.http.PATCH;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Part;
-import retrofit.http.PartMap;
-import retrofit.http.Path;
-import retrofit.http.Query;
-import retrofit.http.QueryMap;
-import retrofit.http.Url;
+import retrofit.http.*;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.Assert.assertNull;
@@ -1716,4 +1697,18 @@ public final class RequestBuilderTest {
       throw new AssertionError(e);
     }
   }
+
+  @Test public void FormEncodedWithDefaultField() {
+       class Example {
+          @FormUrlEncoded //
+          @POST("/foo") //
+          @DefaultField("ping=pong")
+          Call<ResponseBody> method() {
+              return null;
+            }
+          }
+       Request request = buildRequest(Example.class);
+        assertBody(request.body(), "ping=pong");
+      }
+
 }

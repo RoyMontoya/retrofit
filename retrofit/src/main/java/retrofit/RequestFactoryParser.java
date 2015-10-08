@@ -25,26 +25,8 @@ import java.util.Map;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import retrofit.http.Body;
-import retrofit.http.DELETE;
-import retrofit.http.Field;
-import retrofit.http.FieldMap;
-import retrofit.http.FormUrlEncoded;
-import retrofit.http.GET;
-import retrofit.http.HEAD;
-import retrofit.http.HTTP;
-import retrofit.http.Header;
-import retrofit.http.Headers;
-import retrofit.http.Multipart;
-import retrofit.http.PATCH;
-import retrofit.http.POST;
-import retrofit.http.PUT;
-import retrofit.http.Part;
-import retrofit.http.PartMap;
-import retrofit.http.Path;
-import retrofit.http.Query;
-import retrofit.http.QueryMap;
-import retrofit.http.Url;
+
+import retrofit.http.*;
 
 import static retrofit.Utils.methodError;
 
@@ -71,6 +53,7 @@ final class RequestFactoryParser {
   private com.squareup.okhttp.Headers headers;
   private MediaType contentType;
   private RequestBuilderAction[] requestBuilderActions;
+  private String defaultValue;
 
   private Set<String> relativeUrlParamNames;
 
@@ -79,7 +62,7 @@ final class RequestFactoryParser {
   }
 
   private RequestFactory toRequestFactory(BaseUrl baseUrl) {
-    return new RequestFactory(httpMethod, baseUrl, relativeUrl, headers, contentType, hasBody,
+    return new RequestFactory(httpMethod, baseUrl, relativeUrl, headers, contentType, defaultValue, hasBody,
         isFormEncoded, isMultipart, requestBuilderActions);
   }
 
@@ -128,6 +111,11 @@ final class RequestFactoryParser {
           throw methodError(method, "Only one encoding annotation is allowed.");
         }
         isFormEncoded = true;
+      }else if(annotation instanceof DefaultField){
+        defaultValue = ((DefaultField) annotation).value();
+        if(defaultValue.length() == 0){
+          throw methodError(method, "defaultField Value must not be empty");
+        }
       }
     }
 
@@ -198,7 +186,7 @@ final class RequestFactoryParser {
     Type[] methodParameterTypes = method.getGenericParameterTypes();
     Annotation[][] methodParameterAnnotationArrays = method.getParameterAnnotations();
 
-    boolean gotField = false;
+    boolean gotField = defaultValue != null;
     boolean gotPart = false;
     boolean gotBody = false;
     boolean gotPath = false;
